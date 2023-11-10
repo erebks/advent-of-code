@@ -10,7 +10,7 @@ Please note that I tend to do quick-and-dirty solutions which will be quite ugly
 
 | Year | Python | C++ |
 |------|--------|-----|
-| 2015 | 9      | 0   |
+| 2015 | 9      | 2   |
 | 2016 | 0      | 0   |
 | 2017 | 0      | 0   |
 | 2018 | 0      | 0   |
@@ -26,3 +26,15 @@ You won't be able to run the days by just cloning the repo.
 In a previous version of the repository I've also added the inputs, but redistribution of the puzzle inputs would be against [AOC's terms of use](https://www.reddit.com/r/adventofcode/comments/7lesj5/comment/drlt9am/).
 
 In order to run the solutions you should be able to use the provided test-input of each day, or put your personalized puzzle inputs in the right place.
+
+To download your personalized inputs you can use:
+```bash
+curl --cookie "session=<COOKIE>" https://adventofcode.com/20xx/day/x/input --output dayxx.txt
+```
+
+You should be able to find your cookie using your browser.
+E.g. in chrome:
+* Press F12 (developer options)
+* On the top locate "Application" tab
+* On the left side locate "Cookies"
+* Find session cookie value and copy paste
