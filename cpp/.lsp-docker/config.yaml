@@ -1,0 +1,26 @@
+lsp:
+  server:
+    type: docker
+    # subtype:
+    # - "container": attach to an already running container
+    # - "image": when image does not exist, try to build it based on the dockerfile found in the project-scope
+    #   (see Automatic image building). An image might feature an optional tag, i.e. '<image>:<tag>'. If a
+    #   tagless image is indicated 'latest' will be assumed.
+    subtype: image
+    # image/container name to use for this language server
+    name: debian-clangd:latest
+    # server id of a registered LSP server. You can find the list of registered servers evaluating:
+    #
+    # `(let ((keys ())) (maphash (lambda (k v) (push k keys)) lsp-clients) keys)`
+    #
+    # source:
+    # https://stackoverflow.com/questions/17066169/retrieve-keys-from-hash-table-sorted-by-the-values-efficiently
+    server: clangd
+    # command to launch the language server in stdio mode
+    # NOTE: 'launch_command' is not used with 'container' subtype servers as a command is embedded in a
+    # container itself and serves as entrypoint
+    launch_command: "clangd"
+  mappings:
+    # NOTE: the paths must be within the project this server is being build for
+    - source: "."
+      destination: "/work"
