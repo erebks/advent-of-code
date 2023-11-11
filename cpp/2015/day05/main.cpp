@@ -99,7 +99,7 @@ bool part2_is_nice(std::string str) {
 };
 
 int main(void) {
-    std::ifstream text_input("../day04.txt");
+    std::ifstream text_input("../day05.txt");
     std::string input;
     unsigned int num_nice_strings_part1{0};
     unsigned int num_nice_strings_part2{0};
