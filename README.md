@@ -10,7 +10,7 @@ Please note that I tend to do quick-and-dirty solutions which will be quite ugly
 
 | Year | Python | C++ |
 |------|--------|-----|
-| 2015 | 9      | 10  |
+| 2015 | 9      | 14  |
 | 2016 | 0      | 0   |
 | 2017 | 0      | 0   |
 | 2018 | 0      | 0   |
