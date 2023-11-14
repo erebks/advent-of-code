@@ -54,13 +54,43 @@ std::vector<std::string> resplit(const std::string &s, const std::regex &sep_reg
     return {iter, end};
 }
 
+bool generate_selection(unsigned int seed, MatrixXd &selection, Eigen::VectorX<bool> &unknowns) {
+
+    selection = MatrixXd::Zero(selection.rows(), selection.cols());
+
+    // std::cout << "Seed: " << seed << std::endl;
+
+    uint8_t j = 0;
+    for (int row = 0; row < (selection.rows() - 1); row++) {
+        int col = row + 1;
+        for (; col < selection.cols() - 1; col++) {
+            unknowns[j] = (seed >> j) & 0x1;
+            selection(row, col) = unknowns[j];
+            selection(col, row) = unknowns[j];
+            j++;
+        }
+        switch ((int)selection.row(row).sum()) {
+        case 2:
+            break;
+        case 1:
+            selection(row, col) = 1;
+            selection(col, row) = 1;
+            break;
+        default:
+            return false;
+        }
+    }
+
+    // std::cout << "Selection:\n" << selection << std::endl <<std::endl;
+
+    return is_valid(selection);
+}
+
 int main(void) {
     std::ifstream text_input("../day13.txt");
     std::string input;
 
     std::map<std::string, std::map<std::string, int>> names;
-
-    MatrixXd weights;
 
     if (text_input.is_open()) {
         while (std::getline(text_input, input)) {
@@ -75,8 +105,24 @@ int main(void) {
             } else {
                 happiness = -1 * std::stoi(line[3]);
             }
+
             std::cout << "A: " << a << ", B: " << b << ", Happiness: " << happiness << std::endl;
-            std::map<std::string, int> x;
+
+            auto n = names.find(a);
+            if (n == names.end()) {
+                std::cout << "Adding: " << a << std::endl;
+                names.insert({a, {}});
+            }
+
+            names.at(a).insert({b, happiness});
+
+            for (auto &n : names) {
+                std::cout << n.first << ": ";
+                for (auto &a : n.second) {
+                    std::cout << "(" << a.first << " -> " << a.second << "), ";
+                }
+                std::cout << std::endl;
+            }
         }
         text_input.close();
     } else {
@@ -84,50 +130,93 @@ int main(void) {
         return -1;
     }
 
-    MatrixXd selection{{{0, 0, 1, 1}, {0, 0, 1, 1}, {1, 1, 0, 0}, {1, 1, 0, 0}}};
+    MatrixXd weights = MatrixXd::Zero(names.size(), names.size());
 
-    //    MatrixXd weights{{{0, 54, -79, -2}, {83, 0, -7, -63}, {-62, 60, 0, 55}, {46, -7, 41, 0}}};
+    unsigned int row = 0;
+    unsigned int col = 0;
+    for (auto &n : names) {
+        col = 0;
+        for (auto &a : n.second) {
+            if (row == col) {
+                col++;
+            }
+            weights(row, col) = a.second;
+            col++;
+        }
+        row++;
+    }
+
+    // weights = MatrixXd{{{0, 54, -79, -2}, {83, 0, -7, -63}, {-62, 60, 0, 55}, {46, -7, 41, 0}}};
+
+    std::cout << "Weights: \n" << weights << std::endl << std::endl;
+
+    MatrixXd selection = MatrixXd::Zero(weights.rows(), weights.cols());
 
     int permutations = 0;
-    for (int i = 0; i < weights.cols(); i++) {
+    for (int i = 1; i < weights.cols(); i++) {
         permutations += i;
     }
+    permutations -= (weights.cols() - 1);
 
     std::cout << "Permutations: " << permutations << std::endl;
 
     std::set<int> happiness;
 
-    for (int seed = 0; seed < (0x1 << permutations); seed++) {
-
+    for (unsigned int seed = 0; seed < (0x1 << permutations); seed++) {
         Eigen::VectorX<bool> unknowns(permutations);
 
-        int j = 0;
-        for (int row = 0; row < (selection.rows() - 1); row++) {
-            for (int col = row + 1; col < selection.cols(); col++) {
-                unknowns[j] = (seed >> j) & 0x1;
-                selection(row, col) = unknowns[j];
-                selection(col, row) = unknowns[j];
-                j++;
-            }
-        }
-        if (is_valid(selection)) {
-            // std::cout << "Seed: " << seed << "\nUnknowns: \n" << unknowns << std::endl;
+        // Not very pretty but will do the job
+
+        if (generate_selection(seed, selection, unknowns)) {
             // std::cout << "Selection:\n" << selection << std::endl << std::endl;
             MatrixXd m = weights.array() * selection.array();
             // std::cout << m << std::endl << std::endl;
             int s = m.sum();
             // std::cout << s << std::endl;
             happiness.insert(s);
+            std::cout << ((float)seed / (0x1 << permutations)) * 100 << " % done\r";
         }
     }
+    std::cout << std::endl;
 
-    std::cout << "Happiness: " << *happiness.rbegin();
+    std::cout << "Part 1:\n Happiness: " << *happiness.rbegin();
 
-    // std::cout << selection << std::endl << std::endl;
-    // std::cout << weights << std::endl << std::endl;
+    weights.conservativeResize(weights.cols() + 1, weights.rows() + 1);
+    weights.row(weights.rows() - 1).setZero();
+    weights.col(weights.cols() - 1).setZero();
+    std::cout << "Weights: \n" << weights << std::endl << std::endl;
 
-    // MatrixXd m = weights.array() * selection.array();
+    selection = MatrixXd::Zero(weights.rows(), weights.cols());
 
-    // std::cout << m << std::endl << std::endl;
-    // std::cout << m.sum() << std::endl;
+    permutations = 0;
+    for (int i = 1; i < weights.cols(); i++) {
+        permutations += i;
+    }
+    permutations -= (weights.cols() - 1);
+
+    std::cout << "Permutations: " << permutations << std::endl;
+
+    happiness.clear();
+
+    for (unsigned int seed = 0; seed < (0x1 << permutations); seed++) {
+        Eigen::VectorX<bool> unknowns(permutations);
+
+        // Not very pretty but will do the job
+
+        if (generate_selection(seed, selection, unknowns)) {
+            // std::cout << "Selection:\n" << selection << std::endl << std::endl;
+            MatrixXd m = weights.array() * selection.array();
+            // std::cout << m << std::endl << std::endl;
+            int s = m.sum();
+            // std::cout << s << std::endl;
+            happiness.insert(s);
+            std::cout << ((float)seed / (0x1 << permutations)) * 100 << " % done\r";
+        }
+    }
+    std::cout << std::endl;
+
+    std::cout << "Part 2:\n Happiness: " << *happiness.rbegin();
+
+    // 634 too high
+    // 618 too high
 }
