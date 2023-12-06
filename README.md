@@ -18,7 +18,7 @@ Please note that I tend to do quick-and-dirty solutions which will be quite ugly
 | 2020 | 10     | 0   |
 | 2021 | 32     | 0   |
 | 2022 | 32     | 0   |
-| 2023 | 0      | 10  |
+| 2023 | 0      | 12  |
 
 ## Note
 
